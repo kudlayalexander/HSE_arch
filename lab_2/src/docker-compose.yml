@@ -1,0 +1,107 @@
+services:
+  db:
+    container_name: postgresql_db
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${POSTGRESQL_USER}
+      - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRES_DB=${POSTGRESQL_DB}
+    networks:
+      - supervisor-public
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - 3011:80
+    depends_on:
+      - db
+    networks:
+      - supervisor-public
+  
+  app:
+    container_name: celery-app
+    build: .
+    command: "bash -c 'alembic upgrade head && uvicorn server:app --host 0.0.0.0 --port 3012 --reload'"
+    ports:
+      - 3012:3012
+    depends_on:
+      - db
+    restart: always
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+        - action: sync+restart
+          path: ./server.py
+          target: /app/server.py
+    networks:
+      - supervisor-public
+
+  redis:
+    container_name: redis
+    image: redis:6-alpine
+    ports:
+      - 6379:6379
+    networks:
+      - supervisor-public
+  
+  dashboard:
+    build: .
+    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      - 5556:5555
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - app
+      - redis
+      - ssh-worker
+    networks:
+      - supervisor-public
+
+  ssh-worker:
+    build: .
+    command: "bash -c 'celery --config=src.fastapi_celery.celeryconfig -A src.fastapi_celery.worker worker -l info -Q ssh_queue'"
+    depends_on:
+      - app
+      - redis
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src/
+          target: /app/src
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    networks:
+      - supervisor-public
+    volumes:
+      - ./password_uploader:/password_uploader
+  
+  rs232-worker:
+    build: .
+    command: "bash -c 'celery --config=src.fastapi_celery.celeryconfig -A src.fastapi_celery.worker worker -l info -Q rs232_queue'"
+    depends_on:
+      - app
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    networks:
+      - supervisor-public
+
+  # ... other workers ...
+  # ... other workers ...
+  # ... other workers ...
+  
+networks:
+  supervisor-public:
