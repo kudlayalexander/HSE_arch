@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.tox/
+.coverage
+cov-reports/
+coverage/
+report.xml
+reports*/
+.env

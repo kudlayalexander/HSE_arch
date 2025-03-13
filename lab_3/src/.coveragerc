@@ -1,0 +1,8 @@
+[run]
+omit =
+    tests/*,
+    */__init__.py,
+    */start.py,
+    */parse_server_args.py,
+    */logger.py,
+    */device_health_check.py
