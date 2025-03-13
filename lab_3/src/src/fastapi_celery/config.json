@@ -1,0 +1,56 @@
+{   
+    "RS232_SETTINGS": {
+        "DEFAULT_BAUDRATE": 115200,
+        "DEFAULT_BYTESIZE": 8,
+        "DEFAULT_PARITY": "N",
+        "DEFAULT_STOPBITS": 1
+    },
+    "SSH_SETTINGS": {
+        "PASSWORD_UPLOADER_BIN_PATH": "/password_uploader/uploader",
+        "REQUEST_TYPE": "ssh-pass",
+        "DEV_PASSWORD": "tedix-root"
+    },
+    "IMAGE_SETTINGS": {
+        "FOLDER_PATH": "/images",
+        "VALID_EXTS": [".img"]
+    },
+    "BOLIDS": [
+        {
+            "name":"power",
+            "port":"/dev/ttySC0",
+            "pin_capacity": 20,
+            "baudrate": 115200,
+            "bytesize": 8,
+            "parity": "N",
+            "stopbits": 1
+        },
+        {
+            "name":"boot",
+            "port":"/dev/ttySC1",
+            "pin_capacity": 20,
+            "baudrate": 115200,
+            "bytesize": 8,
+            "parity": "N",
+            "stopbits": 1
+        }
+    ],
+    "DEVICES": [
+        {
+            "hostname": "TEDIX-V2-02-B4047E8C",
+            "type": "tedix-v2-02",
+            "ip": "192.168.0.110",
+            "mac": "d0:63:b4:04:7e:8c",
+            "https_port": 1,
+            "ws_port": 7254,
+            "rs232_port": "/dev/ttyV202_0",
+            "output_power": {
+                "bolid_name": "power",
+                "number": 1
+            },
+            "output_boot": {
+                "bolid_name": "boot",
+                "number": 1
+            }
+        }
+    ]    
+}
